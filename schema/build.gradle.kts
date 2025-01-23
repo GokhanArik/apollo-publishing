@@ -13,6 +13,10 @@ dependencies {
   add("api", libs.apollo.api)
 }
 
+abstract class Wrapper @Inject constructor(val softwareComponentFactory: SoftwareComponentFactory)
+
+val softwareComponent = objects.newInstance(Wrapper::class.java).softwareComponentFactory.adhoc("apollo")
+
 apollo {
   service("service1") {
     packageName.set("com.service1")
@@ -20,7 +24,9 @@ apollo {
     alwaysGenerateTypesMatching.add(".*")
     outgoingVariantsConnection {
       afterEvaluate {
-        addToSoftwareComponent("release")
+//        addToSoftwareComponent("release")
+        addToSoftwareComponent(softwareComponent)
+
       }
     }
   }
@@ -30,7 +36,9 @@ apollo {
     alwaysGenerateTypesMatching.add(".*")
     outgoingVariantsConnection {
       afterEvaluate {
-        addToSoftwareComponent("release")
+//        addToSoftwareComponent("release")
+        addToSoftwareComponent(softwareComponent)
+
       }
     }
   }
@@ -50,9 +58,10 @@ android {
 configure<PublishingExtension> {
   publications {
     create<MavenPublication>("default") {
-      afterEvaluate {
-        from(components["release"])
-      }
+//      afterEvaluate {
+//        from(components["release"])
+//      }
+      artifact("${layout.buildDirectory.get().asFile}/intermediates/aar_main_jar/release/classes.jar")
     }
   }
   repositories {
