@@ -1,29 +1,41 @@
 
 plugins {
-  alias(libs.plugins.kotlin.android)
+  id("java-library")
+  kotlin("jvm")
+//  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.apollo)
-  alias(libs.plugins.android.library)
   id("maven-publish")
 }
 
 group = "com.fragments"
 version = "1.0.0"
 
-dependencies {
-  add("api", project(":schema"))
+sourceSets() {
+  create("stage") {
+    java.srcDir("src/stage/java")
+    java.srcDir("build/generated/source/apollo/stage")
+  }
+
+  create("prod") {
+    java.srcDir("src/prod/java")
+    java.srcDir("build/generated/source/apollo/prod")
+  }
 }
 
-android {
-  namespace = "com.schema"
-  compileSdk = libs.versions.android.sdkversion.compile.get().toInt()
-
-  publishing {
-    singleVariant("release")
+java {
+  registerFeature("stage") {
+    usingSourceSet(sourceSets["stage"])
+    capability("com.fragments", "stage", "c")
   }
 
-  kotlinOptions {
-    jvmTarget = "1.8"
+  registerFeature("prod") {
+    usingSourceSet(sourceSets["prod"])
+    capability("com.fragments", "prod", "c")
   }
+}
+
+dependencies {
+  add("api", project(":schema"))
 }
 
 abstract class Wrapper @Inject constructor(val softwareComponentFactory: SoftwareComponentFactory)
@@ -31,20 +43,37 @@ abstract class Wrapper @Inject constructor(val softwareComponentFactory: Softwar
 val softwareComponent = objects.newInstance(Wrapper::class.java).softwareComponentFactory.adhoc("apollo")
 
 apollo {
-  service("service1") {
-    packageName.set("com.service1")
+
+  service("stage") {
+    packageName.set("com.generated")
     dependsOn(project(":schema"))
+
+    srcDir("src/stage/graphql")
+
+    outputDirConnection {
+      connectToJavaSourceSet("stage")
+    }
+
     outgoingVariantsConnection {
       addToSoftwareComponent(softwareComponent)
     }
   }
-  service("service2") {
-    packageName.set("com.service2")
+
+  service("prod") {
+    packageName.set("com.generated")
     dependsOn(project(":schema"))
+
+    srcDir("src/prod/graphql")
+
+    outputDirConnection {
+      connectToJavaSourceSet("prod")
+    }
+
     outgoingVariantsConnection {
       addToSoftwareComponent(softwareComponent)
     }
   }
+
 }
 
 configure<PublishingExtension> {

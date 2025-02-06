@@ -1,0 +1,16 @@
+type Query {
+  stageField(fieldInput: StageFieldInput!): String!
+  stageField2(fieldInput2: StageFieldInput2!): String!
+}
+
+input StageFieldInput {
+  field: String!
+}
+
+input StageFieldInput2 {
+  field: String!
+}
+
+type StageEntry {
+  title: String
+}

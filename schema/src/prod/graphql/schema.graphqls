@@ -10,3 +10,7 @@ input FieldInput {
 input FieldInput2 {
   field: String!
 }
+
+type ProdEntry {
+  title: String
+}

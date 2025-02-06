@@ -1,0 +1,13 @@
+#query testquery(
+#  $fieldInput: FieldInput!
+#) {
+#  field(fieldInput: $fieldInput)
+#}
+#fragment QueryDetails on Query {
+#  field(fieldInput: $fieldInput)
+##  stageField(fieldInput: $fieldInput)
+#}
+
+fragment StageEntryFrag on StageEntry {
+  title
+}

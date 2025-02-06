@@ -11,3 +11,4 @@ pluginManagement {
 include(":schema")
 include(":fragments")
 include(":consumer")
+include(":app")

@@ -1,3 +1,0 @@
-fragment QueryDetails on Query {
-  field(fieldInput: $fieldInput)
-}

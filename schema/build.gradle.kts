@@ -1,16 +1,41 @@
 
 plugins {
-  alias(libs.plugins.kotlin.android)
+  id("java-library")
   alias(libs.plugins.apollo)
-  alias(libs.plugins.android.library)
   id("maven-publish")
 }
 
 group = "com.schema"
 version = "1.0.0"
 
+sourceSets() {
+    create("stage") {
+        java.srcDir("src/stage/java")
+        java.srcDir("build/generated/source/apollo/stage")
+    }
+
+    create("prod") {
+        java.srcDir("src/prod/java")
+        java.srcDir("build/generated/source/apollo/prod")
+    }
+}
+
+java {
+    registerFeature("stage") {
+        usingSourceSet(sourceSets["stage"])
+        capability("com.schema", "stage", "c")
+    }
+
+    registerFeature("prod") {
+        usingSourceSet(sourceSets["prod"])
+        capability("com.schema", "prod", "c")
+    }
+}
+
+
 dependencies {
-  add("api", libs.apollo.api)
+    add("stageApi", libs.apollo.api)
+    add("prodApi", libs.apollo.api)
 }
 
 abstract class Wrapper @Inject constructor(val softwareComponentFactory: SoftwareComponentFactory)
@@ -18,50 +43,47 @@ abstract class Wrapper @Inject constructor(val softwareComponentFactory: Softwar
 val softwareComponent = objects.newInstance(Wrapper::class.java).softwareComponentFactory.adhoc("apollo")
 
 apollo {
-  service("service1") {
-    packageName.set("com.service1")
+  service("stage") {
+    schemaFile.set(file("src/stage/graphql/schema.graphqls"))
+
+    packageName.set("com.generated")
     generateApolloMetadata.set(true)
     alwaysGenerateTypesMatching.add(".*")
+
+    outputDirConnection {
+      connectToJavaSourceSet("stage")
+    }
+
     outgoingVariantsConnection {
       afterEvaluate {
-//        addToSoftwareComponent("release")
-        addToSoftwareComponent(softwareComponent)
+        addToSoftwareComponent("java")
 
       }
     }
   }
-  service("service2") {
-    packageName.set("com.service2")
+  service("prod") {
+    schemaFile.set(file("src/prod/graphql/schema.graphqls"))
+
+    packageName.set("com.generated")
     generateApolloMetadata.set(true)
     alwaysGenerateTypesMatching.add(".*")
+
+    outputDirConnection {
+        connectToJavaSourceSet("stage")
+    }
+
     outgoingVariantsConnection {
       afterEvaluate {
-//        addToSoftwareComponent("release")
-        addToSoftwareComponent(softwareComponent)
-
+          addToSoftwareComponent("java")
       }
     }
-  }
-}
-
-android {
-  namespace = "com.schema"
-  compileSdk = libs.versions.android.sdkversion.compile.get().toInt()
-  publishing {
-    singleVariant("release")
-  }
-  kotlinOptions {
-    jvmTarget = "1.8"
   }
 }
 
 configure<PublishingExtension> {
   publications {
     create<MavenPublication>("default") {
-//      afterEvaluate {
-//        from(components["release"])
-//      }
-      artifact("${layout.buildDirectory.get().asFile}/intermediates/aar_main_jar/release/classes.jar")
+        from(components["java"])
     }
   }
   repositories {

@@ -1,0 +1,9 @@
+query testquery(
+  $fieldInput: FieldInput!
+) {
+  field(fieldInput: $fieldInput)
+}
+
+fragment ProdentryFrag on ProdEntry {
+  title
+}
