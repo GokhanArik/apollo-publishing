@@ -21,7 +21,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 [plugins]
 kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.1.0" }
 android-library = { id = "com.android.library", version = "8.2.2" }
-apollo = { id = "com.apollographql.apollo", version = "4.1.1-SNAPSHOT" }
+apollo = { id = "com.apollographql.apollo", version = "4.1.1" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 
